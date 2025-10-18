@@ -1,0 +1,2878 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام رصد غياب الطلبة</title>
+    <style>
+        body {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, 
+                #667eea 0%, 
+                #764ba2 12.5%, 
+                #f093fb 25%, 
+                #f5576c 37.5%, 
+                #4facfe 50%, 
+                #00f2fe 62.5%, 
+                #43e97b 75%, 
+                #38f9d7 87.5%, 
+                #667eea 100%);
+            background-size: 800% 800%;
+            animation: gradientShift 20s ease infinite;
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        html {
+            height: 100%;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            25% { background-position: 100% 0%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* ترويسة المدرسة الجديدة */
+        .school-header {
+            background: linear-gradient(135deg, 
+                #667eea 0%, 
+                #764ba2 20%, 
+                #f093fb 40%, 
+                #f5576c 60%, 
+                #4facfe 80%, 
+                #00f2fe 100%);
+            background-size: 400% 400%;
+            animation: headerFlow 15s ease infinite;
+            padding: 3rem 3rem;
+            box-shadow: 
+                0 25px 60px rgba(102, 126, 234, 0.3),
+                0 10px 30px rgba(240, 147, 251, 0.2),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            border-radius: 0 0 50px 50px;
+        }
+
+        .school-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, 
+                rgba(255, 255, 255, 0.1) 0%, 
+                transparent 30%, 
+                rgba(255, 255, 255, 0.05) 60%, 
+                transparent 100%);
+            animation: headerShine 8s ease-in-out infinite;
+        }
+
+        .school-header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 20px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(102, 126, 234, 0.3) 20%, 
+                rgba(240, 147, 251, 0.4) 50%, 
+                rgba(79, 172, 254, 0.3) 80%, 
+                transparent 100%);
+            border-radius: 50px;
+            filter: blur(10px);
+        }
+
+        @keyframes headerFlow {
+            0%, 100% { background-position: 0% 50%; }
+            25% { background-position: 100% 0%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+        }
+
+        @keyframes headerShine {
+            0%, 100% { 
+                transform: translateX(-100%) skewX(-15deg);
+                opacity: 0;
+            }
+            50% { 
+                transform: translateX(100%) skewX(-15deg);
+                opacity: 1;
+            }
+        }
+
+        @keyframes headerGradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            max-width: 1400px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .school-info {
+            flex: 1;
+            text-align: center;
+            margin: 0 2rem;
+            position: relative;
+        }
+
+        .school-name {
+            font-size: 2.2rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 30%, #e2e8f0 70%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 0 0 0.4rem 0;
+            text-shadow: 0 3px 6px rgba(0, 0, 0, 0.4);
+            position: relative;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+        }
+
+        .school-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.95);
+            margin: 0;
+            font-weight: 600;
+            line-height: 1.5;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+        }
+
+        .principal-info {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.85);
+            margin: 0.4rem 0 0 0;
+            font-weight: 500;
+            font-style: italic;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(30px);
+            border-radius: 35px;
+            box-shadow: 
+                0 40px 80px rgba(0, 0, 0, 0.15),
+                0 0 0 1px rgba(255, 255, 255, 0.4),
+                inset 0 2px 0 rgba(255, 255, 255, 0.6),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.05);
+            padding: 4rem;
+            text-align: center;
+            max-width: 520px;
+            width: 90%;
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, 
+                #667eea 0%, 
+                #764ba2 16.66%, 
+                #f093fb 33.33%, 
+                #f5576c 50%, 
+                #4facfe 66.66%, 
+                #00f2fe 83.33%, 
+                #43e97b 100%);
+            background-size: 300% 100%;
+            animation: containerGradient 8s ease infinite;
+            border-radius: 35px 35px 0 0;
+        }
+
+        .container::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 20%, rgba(102, 126, 234, 0.03) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(240, 147, 251, 0.03) 0%, transparent 50%);
+            border-radius: 35px;
+            pointer-events: none;
+        }
+
+        @keyframes containerGradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .header {
+            margin-bottom: 3.5rem;
+        }
+
+        .logo {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, 
+                #667eea 0%, 
+                #764ba2 25%, 
+                #f093fb 50%, 
+                #4facfe 75%, 
+                #43e97b 100%);
+            background-size: 300% 300%;
+            animation: logoGradient 6s ease infinite;
+            border-radius: 30px;
+            margin: 0 auto 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3.2rem;
+            box-shadow: 
+                0 20px 45px rgba(102, 126, 234, 0.4),
+                0 0 0 3px rgba(255, 255, 255, 0.3),
+                inset 0 3px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -3px 0 rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            animation: shimmer 4s ease-in-out infinite;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3) 0%, transparent 50%);
+            border-radius: 30px;
+        }
+
+        @keyframes logoGradient {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+            100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        }
+
+        .title {
+            font-size: 2.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #667eea 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.8rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: #64748b;
+            margin-bottom: 0;
+            font-weight: 500;
+            line-height: 1.6;
+        }
+
+        .buttons-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2.5rem;
+            max-width: 100%;
+        }
+
+        .role-button {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 1rem;
+            padding: 1.2rem 1.8rem;
+            border: none;
+            border-radius: 18px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            min-height: 70px;
+            width: 100%;
+        }
+
+        .role-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.25), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .role-button:hover::before {
+            left: 100%;
+        }
+
+        .role-button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .role-button:active::after {
+            width: 300px;
+            height: 300px;
+        }
+
+        .teacher-button {
+            background: linear-gradient(135deg, #10b981 0%, #059669 30%, #047857 70%, #065f46 100%);
+            color: white;
+            box-shadow: 
+                0 15px 40px rgba(16, 185, 129, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.2),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .teacher-button:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 
+                0 30px 60px rgba(16, 185, 129, 0.5),
+                0 0 0 3px rgba(16, 185, 129, 0.3),
+                0 0 20px rgba(16, 185, 129, 0.4),
+                inset 0 2px 0 rgba(255, 255, 255, 0.3);
+            background: linear-gradient(135deg, #34d399 0%, #10b981 30%, #059669 70%, #047857 100%);
+        }
+
+        .view-button {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 30%, #1d4ed8 70%, #1e40af 100%);
+            color: white;
+            box-shadow: 
+                0 15px 40px rgba(59, 130, 246, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.2),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .view-button:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 
+                0 30px 60px rgba(59, 130, 246, 0.5),
+                0 0 0 3px rgba(59, 130, 246, 0.3),
+                0 0 20px rgba(59, 130, 246, 0.4),
+                inset 0 2px 0 rgba(255, 255, 255, 0.3);
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 30%, #2563eb 70%, #1d4ed8 100%);
+        }
+
+        .admin-button {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 30%, #b91c1c 70%, #991b1b 100%);
+            color: white;
+            box-shadow: 
+                0 15px 40px rgba(239, 68, 68, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.2),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .admin-button:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 
+                0 30px 60px rgba(239, 68, 68, 0.5),
+                0 0 0 3px rgba(239, 68, 68, 0.3),
+                0 0 20px rgba(239, 68, 68, 0.4),
+                inset 0 2px 0 rgba(255, 255, 255, 0.3);
+            background: linear-gradient(135deg, #f87171 0%, #ef4444 30%, #dc2626 70%, #b91c1c 100%);
+        }
+
+        .stats-button {
+            background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 30%, #6d28d9 70%, #5b21b6 100%);
+            color: white;
+            box-shadow: 
+                0 15px 40px rgba(139, 92, 246, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.2),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stats-button:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 
+                0 30px 60px rgba(139, 92, 246, 0.5),
+                0 0 0 3px rgba(139, 92, 246, 0.3),
+                0 0 20px rgba(139, 92, 246, 0.4),
+                inset 0 2px 0 rgba(255, 255, 255, 0.3);
+            background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 30%, #7c3aed 70%, #6d28d9 100%);
+        }
+
+        .documentation-button {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 30%, #b45309 70%, #92400e 100%);
+            color: white;
+            box-shadow: 
+                0 15px 40px rgba(245, 158, 11, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.2),
+                inset 0 2px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .documentation-button:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 
+                0 30px 60px rgba(245, 158, 11, 0.5),
+                0 0 0 3px rgba(245, 158, 11, 0.3),
+                0 0 20px rgba(245, 158, 11, 0.4),
+                inset 0 2px 0 rgba(255, 255, 255, 0.3);
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 30%, #d97706 70%, #b45309 100%);
+        }
+
+        .icon {
+            font-size: 2.8rem;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            backdrop-filter: blur(15px);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            animation: iconFloat 4s ease-in-out infinite;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 8px 25px rgba(0, 0, 0, 0.15),
+                inset 0 2px 0 rgba(255, 255, 255, 0.3),
+                inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .icon::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .icon::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.4s ease, height 0.4s ease;
+        }
+
+        @keyframes iconFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
+            25% { transform: translateY(-8px) rotate(3deg) scale(1.05); }
+            50% { transform: translateY(-4px) rotate(-2deg) scale(1.03); }
+            75% { transform: translateY(-10px) rotate(4deg) scale(1.07); }
+        }
+
+        .role-button:hover .icon {
+            transform: scale(1.25) rotate(12deg) translateY(-8px);
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.35));
+            background: rgba(255, 255, 255, 0.35);
+            border-color: rgba(255, 255, 255, 0.5);
+            animation: iconBounce 1s ease-in-out;
+            box-shadow: 
+                0 15px 40px rgba(0, 0, 0, 0.25),
+                inset 0 3px 0 rgba(255, 255, 255, 0.4),
+                inset 0 -3px 0 rgba(0, 0, 0, 0.15),
+                0 0 30px rgba(255, 255, 255, 0.3);
+        }
+
+        .role-button:hover .icon::before {
+            left: 100%;
+        }
+
+        .role-button:hover .icon::after {
+            width: 50px;
+            height: 50px;
+        }
+
+        @keyframes iconBounce {
+            0%, 100% { transform: scale(1.25) rotate(12deg) translateY(-8px); }
+            25% { transform: scale(1.35) rotate(-6deg) translateY(-15px); }
+            50% { transform: scale(1.3) rotate(18deg) translateY(-10px); }
+            75% { transform: scale(1.28) rotate(-3deg) translateY(-12px); }
+        }
+
+        .teacher-button .icon {
+            animation-delay: 0s;
+        }
+
+        .view-button .icon {
+            animation-delay: 0.75s;
+        }
+
+        .admin-button .icon {
+            animation-delay: 1.5s;
+        }
+
+        .stats-button .icon {
+            animation-delay: 2.25s;
+        }
+
+        .documentation-button .icon {
+            animation-delay: 3s;
+        }
+
+        /* نافذة كلمة المرور */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 1.5rem;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            transition: border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+
+        .password-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .modal-button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .confirm-btn {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+
+        .confirm-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(72, 187, 120, 0.4);
+        }
+
+        .cancel-btn {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+        }
+
+        .cancel-btn:hover {
+            background: #edf2f7;
+        }
+
+        .error-message {
+            color: #e53e3e;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        /* نافذة عرض البيانات */
+        .data-modal {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+
+        .data-modal-content {
+            background: white;
+            border-radius: 25px;
+            max-width: 95%;
+            max-height: 90%;
+            width: 1200px;
+            height: 80%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 
+                0 30px 80px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            overflow: hidden;
+        }
+
+        .data-modal.show .data-modal-content {
+            transform: scale(1);
+        }
+
+        .data-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 25px 25px 0 0;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .data-title {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .data-controls {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .date-filter {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .action-controls {
+            display: flex;
+            gap: 0.8rem;
+        }
+
+        .date-input {
+            padding: 0.6rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #2d3748;
+            font-size: 0.9rem;
+            font-weight: 500;
+            min-width: 150px;
+        }
+
+        .date-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.6);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+        }
+
+        .today-btn {
+            background: rgba(245, 158, 11, 0.9);
+            color: white;
+        }
+
+        .today-btn:hover {
+            background: rgba(245, 158, 11, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+        }
+
+        .all-btn {
+            background: rgba(139, 69, 19, 0.9);
+            color: white;
+        }
+
+        .all-btn:hover {
+            background: rgba(139, 69, 19, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.4);
+        }
+
+        .control-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .print-btn {
+            background: rgba(34, 197, 94, 0.9);
+            color: white;
+        }
+
+        .print-btn:hover {
+            background: rgba(34, 197, 94, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+        }
+
+        .refresh-btn {
+            background: rgba(59, 130, 246, 0.9);
+            color: white;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(59, 130, 246, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .close-btn {
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+        }
+
+        .close-btn:hover {
+            background: rgba(239, 68, 68, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        .data-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #64748b;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .data-table td {
+            padding: 0.8rem 1rem;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .data-table tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .data-table tr:hover {
+            background: #e2e8f0;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+
+        .absent-mark {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        .present-mark {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .total-students .stat-number {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .absent-students .stat-number {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .present-students .stat-number {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* تصميم الطباعة المحسن */
+        @media print {
+            @page {
+                size: A4;
+                margin: 1.5cm;
+                direction: rtl;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            body {
+                background: white !important;
+                font-family: 'Arial', sans-serif !important;
+                font-size: 12pt !important;
+                line-height: 1.4 !important;
+                color: #000 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            /* إخفاء كل شيء عدا المحتوى المطلوب طباعته */
+            body * {
+                visibility: hidden !important;
+            }
+
+            /* إظهار المحتوى المطلوب فقط */
+            .print-content, .print-content * {
+                visibility: visible !important;
+            }
+
+            .print-content {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                background: white !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            /* ترويسة الطباعة */
+            .print-header {
+                text-align: center !important;
+                margin-bottom: 20pt !important;
+                padding-bottom: 15pt !important;
+                border-bottom: 2pt solid #667eea !important;
+            }
+
+            .print-school-name {
+                font-size: 18pt !important;
+                font-weight: bold !important;
+                color: #667eea !important;
+                margin-bottom: 8pt !important;
+            }
+
+            .print-title {
+                font-size: 16pt !important;
+                font-weight: bold !important;
+                color: #2d3748 !important;
+                margin-bottom: 5pt !important;
+            }
+
+            .print-date {
+                font-size: 12pt !important;
+                color: #4a5568 !important;
+                margin-bottom: 0 !important;
+            }
+
+            /* الإحصائيات للطباعة */
+            .print-stats {
+                display: flex !important;
+                justify-content: space-around !important;
+                margin: 15pt 0 !important;
+                padding: 10pt !important;
+                background: #f8fafc !important;
+                border: 1pt solid #e2e8f0 !important;
+                border-radius: 5pt !important;
+            }
+
+            .print-stat {
+                text-align: center !important;
+            }
+
+            .print-stat-number {
+                font-size: 16pt !important;
+                font-weight: bold !important;
+                color: #667eea !important;
+                display: block !important;
+            }
+
+            .print-stat-label {
+                font-size: 10pt !important;
+                color: #64748b !important;
+                margin-top: 3pt !important;
+            }
+
+            /* جدول الطباعة */
+            .print-table {
+                width: 100% !important;
+                border-collapse: collapse !important;
+                margin-top: 15pt !important;
+                font-size: 10pt !important;
+            }
+
+            .print-table th {
+                background: #667eea !important;
+                color: white !important;
+                padding: 8pt 6pt !important;
+                text-align: center !important;
+                font-weight: bold !important;
+                border: 1pt solid #4c51bf !important;
+                font-size: 11pt !important;
+            }
+
+            .print-table td {
+                padding: 6pt 4pt !important;
+                text-align: center !important;
+                border: 1pt solid #e2e8f0 !important;
+                vertical-align: middle !important;
+                line-height: 1.3 !important;
+            }
+
+            .print-table tr:nth-child(even) {
+                background: #f8fafc !important;
+            }
+
+            .print-table tr:nth-child(odd) {
+                background: white !important;
+            }
+
+            /* تنسيق خاص للطباعة */
+            .print-absent-mark {
+                background: #ef4444 !important;
+                color: white !important;
+                padding: 2pt 6pt !important;
+                border-radius: 3pt !important;
+                font-size: 9pt !important;
+                font-weight: bold !important;
+                display: inline-block !important;
+            }
+
+            .print-timestamp {
+                font-size: 9pt !important;
+                line-height: 1.2 !important;
+            }
+
+            .print-date-part {
+                color: #1e40af !important;
+                font-weight: bold !important;
+                display: block !important;
+                margin-bottom: 2pt !important;
+            }
+
+            .print-time-part {
+                color: #10b981 !important;
+                font-weight: bold !important;
+                font-size: 8pt !important;
+            }
+
+            /* تذييل الطباعة */
+            .print-footer {
+                margin-top: 20pt !important;
+                padding-top: 10pt !important;
+                border-top: 1pt solid #e2e8f0 !important;
+                text-align: center !important;
+                font-size: 9pt !important;
+                color: #64748b !important;
+            }
+
+            /* كسر الصفحة */
+            .page-break {
+                page-break-before: always !important;
+            }
+
+            /* تجنب كسر الصفحة داخل الصفوف */
+            .print-table tr {
+                page-break-inside: avoid !important;
+            }
+
+            /* إخفاء عناصر غير مرغوب فيها */
+            .data-controls,
+            .control-btn,
+            .modal,
+            .loading-spinner,
+            button,
+            input {
+                display: none !important;
+            }
+        }
+
+        .footer {
+            margin-top: 2.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(226, 232, 240, 0.5);
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 768px) {
+            .school-header {
+                padding: 1rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .school-info {
+                margin: 0;
+            }
+            
+            .school-name {
+                font-size: 1.6rem;
+            }
+            
+            .school-subtitle {
+                font-size: 1rem;
+            }
+            
+            .principal-info {
+                font-size: 0.8rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .container {
+                padding: 2rem 1.5rem;
+                margin: 0;
+                max-width: 100%;
+            }
+            
+            .logo {
+                width: 70px;
+                height: 70px;
+                font-size: 2.5rem;
+            }
+            
+            .title {
+                font-size: 1.8rem;
+            }
+            
+            .subtitle {
+                font-size: 0.95rem;
+            }
+            
+            .buttons-container {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+                margin-top: 2rem;
+            }
+            
+            .role-button {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+                gap: 0.8rem;
+                min-height: 60px;
+                justify-content: center;
+            }
+            
+            .icon {
+                font-size: 2.2rem;
+                width: 65px;
+                height: 65px;
+                border-radius: 20px;
+            }
+
+            .modal-content {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .data-controls {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+
+            .date-filter {
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .action-controls {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .date-input {
+                min-width: 120px;
+                font-size: 0.8rem;
+            }
+
+            .control-btn {
+                font-size: 0.8rem;
+                padding: 0.6rem 1rem;
+            }
+
+            .data-table {
+                font-size: 0.8rem;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 0.5rem 0.3rem;
+            }
+
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .school-name {
+                font-size: 1.4rem;
+            }
+            
+            .school-subtitle {
+                font-size: 0.9rem;
+            }
+            
+            .principal-info {
+                font-size: 0.75rem;
+            }
+            
+            .container {
+                padding: 1.5rem 1rem;
+            }
+            
+            .title {
+                font-size: 1.6rem;
+            }
+            
+            .subtitle {
+                font-size: 0.9rem;
+            }
+            
+            .buttons-container {
+                gap: 0.8rem;
+                margin-top: 1.5rem;
+            }
+            
+            .role-button {
+                padding: 0.9rem 1.2rem;
+                font-size: 0.95rem;
+                gap: 0.7rem;
+                min-height: 55px;
+            }
+            
+            .icon {
+                font-size: 2rem;
+                width: 60px;
+                height: 60px;
+                border-radius: 18px;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+                gap: 0.8rem;
+            }
+        }
+
+        /* تحسين للشاشات الكبيرة */
+        @media (min-width: 1200px) {
+            .buttons-container {
+                grid-template-columns: repeat(2, 1fr);
+                max-width: 800px;
+                margin: 2.5rem auto 0;
+            }
+            
+            .role-button {
+                padding: 1.4rem 2rem;
+                font-size: 1.2rem;
+                gap: 1.2rem;
+                min-height: 80px;
+            }
+            
+            .icon {
+                font-size: 3rem;
+                width: 90px;
+                height: 90px;
+                border-radius: 28px;
+            }
+        }
+
+        /* تحسين للشاشات العريضة جداً */
+        @media (min-width: 1600px) {
+            .buttons-container {
+                grid-template-columns: repeat(3, 1fr);
+                max-width: 1000px;
+            }
+            
+            .icon {
+                font-size: 3.2rem;
+                width: 95px;
+                height: 95px;
+                border-radius: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ترويسة المدرسة -->
+    <header class="school-header">
+        <div class="header-content">
+            <div class="school-info">
+                <h1 class="school-name">مدرسة أم مالك الأنصارية للبنات</h1>
+                <p class="school-subtitle">تعليم متطور يوظف التقانة بكفاءة، مع تعلم مستدام و شراكة مجتمعية فاعلة</p>
+                <p class="principal-info">إعداد مديرة المدرسة: أحلام بنت علي الحمدانية</p>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-content">
+        <main class="container">
+        <header class="header">
+            <div class="logo">🎓</div>
+            <h1 class="title">نظام رصد الغياب</h1>
+            <p class="subtitle">منصة متطورة لإدارة حضور وغياب الطلبة</p>
+        </header>
+
+        <div class="buttons-container">
+            <a href="https://script.google.com/macros/s/AKfycbwTdo7sJOuRReoZ6znfQrGhPN0NwLpH9-CmenhX1zJj-TqIYH--hrw0dt3PkfBIKsShqg/exec?view=teacher" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               class="role-button teacher-button">
+                <span class="icon">🧑‍🏫</span>
+                <span>دخول المعلم</span>
+            </a>
+
+            <button class="role-button view-button" onclick="showDataView()">
+                <span class="icon">📊</span>
+                <span>عرض بيانات الغياب</span>
+            </button>
+
+            <button class="role-button admin-button" onclick="showPasswordModal()">
+                <span class="icon">⚙️</span>
+                <span>دخول الإدارة</span>
+            </button>
+
+            <button class="role-button stats-button" onclick="showStatsPasswordModal()">
+                <span class="icon">📈</span>
+                <span>الإحصائيات المتقدمة</span>
+            </button>
+
+            <button class="role-button documentation-button" onclick="showDocumentationView()">
+                <span class="icon">📝</span>
+                <span>التوثيق اليومي</span>
+            </button>
+        </div>
+
+            <footer class="footer">
+                <p>🔒 نظام آمن ومحمي • تطوير حديث</p>
+            </footer>
+        </main>
+    </div>
+
+    <!-- نافذة كلمة المرور -->
+    <div class="modal" id="passwordModal">
+        <div class="modal-content">
+            <h2 class="modal-title">🔐 دخول الإدارة</h2>
+            <input type="password" 
+                   class="password-input" 
+                   id="passwordInput" 
+                   placeholder="أدخل كلمة المرور"
+                   onkeypress="handlePasswordKeyPress(event)">
+            <div class="error-message" id="errorMessage">كلمة المرور غير صحيحة</div>
+            <div class="modal-buttons">
+                <button class="modal-button confirm-btn" onclick="checkPassword()">دخول</button>
+                <button class="modal-button cancel-btn" onclick="hidePasswordModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة كلمة مرور الإحصائيات -->
+    <div class="modal" id="statsPasswordModal">
+        <div class="modal-content">
+            <h2 class="modal-title">📈 الإحصائيات المتقدمة</h2>
+            <input type="password" 
+                   class="password-input" 
+                   id="statsPasswordInput" 
+                   placeholder="أدخل كلمة المرور"
+                   onkeypress="handleStatsPasswordKeyPress(event)">
+            <div class="error-message" id="statsErrorMessage">كلمة المرور غير صحيحة</div>
+            <div class="modal-buttons">
+                <button class="modal-button confirm-btn" onclick="checkStatsPassword()">دخول</button>
+                <button class="modal-button cancel-btn" onclick="hideStatsPasswordModal()">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة الإحصائيات المتقدمة -->
+    <div class="modal data-modal" id="advancedStatsModal">
+        <div class="data-modal-content">
+            <div class="data-header">
+                <h2 class="data-title">📈 الإحصائيات المتقدمة</h2>
+                <div class="data-controls">
+                    <div class="action-controls">
+                        <button class="control-btn print-btn" onclick="printAdvancedStats()">
+                            <span class="icon">🖨️</span>
+                            طباعة
+                        </button>
+                        <button class="control-btn refresh-btn" onclick="refreshAdvancedStats()">
+                            <span class="icon">🔄</span>
+                            تحديث
+                        </button>
+                        <button class="control-btn close-btn" onclick="hideAdvancedStats()">
+                            <span class="icon">✖️</span>
+                            إغلاق
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="data-content" id="advancedStatsContent">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>جاري تحليل البيانات...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة التوثيق اليومي -->
+    <div class="modal data-modal" id="documentationModal">
+        <div class="data-modal-content">
+            <div class="data-header">
+                <h2 class="data-title">📝 التوثيق اليومي</h2>
+                <div class="data-controls">
+                    <div class="date-filter">
+                        <label for="docDateFilter" style="color: white; font-size: 0.9rem; margin-left: 0.5rem;">التاريخ:</label>
+                        <input type="date" id="docDateFilter" class="date-input" onchange="filterDocumentationByDate()">
+                        <button class="control-btn today-btn" onclick="setDocTodayDate()">
+                            <span class="icon">📅</span>
+                            اليوم
+                        </button>
+                        <button class="control-btn all-btn" onclick="showAllDocumentation()">
+                            <span class="icon">📋</span>
+                            الكل
+                        </button>
+                    </div>
+                    <div class="action-controls">
+                        <button class="control-btn print-btn" onclick="printDocumentation()">
+                            <span class="icon">🖨️</span>
+                            طباعة
+                        </button>
+                        <button class="control-btn refresh-btn" onclick="refreshDocumentation()">
+                            <span class="icon">🔄</span>
+                            تحديث
+                        </button>
+                        <button class="control-btn close-btn" onclick="hideDocumentationView()">
+                            <span class="icon">✖️</span>
+                            إغلاق
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="data-content" id="documentationContent">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>جاري تحميل التوثيق اليومي...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة عرض البيانات -->
+    <div class="modal data-modal" id="dataModal">
+        <div class="data-modal-content">
+            <div class="data-header">
+                <h2 class="data-title">📊 بيانات غياب الطلبة</h2>
+                <div class="data-controls">
+                    <div class="date-filter">
+                        <label for="dateFilter" style="color: white; font-size: 0.9rem; margin-left: 0.5rem;">التاريخ:</label>
+                        <input type="date" id="dateFilter" class="date-input" onchange="filterByDate()">
+                        <button class="control-btn today-btn" onclick="setTodayDate()">
+                            <span class="icon">📅</span>
+                            اليوم
+                        </button>
+                        <button class="control-btn all-btn" onclick="showAllData()">
+                            <span class="icon">📋</span>
+                            الكل
+                        </button>
+                    </div>
+                    <div class="action-controls">
+                        <button class="control-btn print-btn" onclick="printData()">
+                            <span class="icon">🖨️</span>
+                            طباعة
+                        </button>
+                        <button class="control-btn refresh-btn" onclick="refreshData()">
+                            <span class="icon">🔄</span>
+                            تحديث
+                        </button>
+                        <button class="control-btn close-btn" onclick="hideDataView()">
+                            <span class="icon">✖️</span>
+                            إغلاق
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="data-content" id="dataContent">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>جاري تحميل البيانات...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+            document.getElementById('passwordInput').focus();
+        }
+
+        function hidePasswordModal() {
+            const modal = document.getElementById('passwordModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('errorMessage').style.display = 'none';
+            }, 300);
+        }
+
+        function checkPassword() {
+            const password = document.getElementById('passwordInput').value;
+            const errorMessage = document.getElementById('errorMessage');
+            
+            if (password === 'admin123') {
+                hidePasswordModal();
+                window.open('https://script.google.com/macros/s/AKfycbwTdo7sJOuRReoZ6znfQrGhPN0NwLpH9-CmenhX1zJj-TqIYH--hrw0dt3PkfBIKsShqg/exec', '_blank', 'noopener,noreferrer');
+            } else {
+                errorMessage.style.display = 'block';
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordInput').focus();
+            }
+        }
+
+        function handlePasswordKeyPress(event) {
+            if (event.key === 'Enter') {
+                checkPassword();
+            }
+        }
+
+        // إخفاء النافذة عند النقر خارجها
+        document.getElementById('passwordModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                hidePasswordModal();
+            }
+        });
+
+        // وظائف عرض البيانات
+        function showDataView() {
+            const modal = document.getElementById('dataModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+            loadData();
+        }
+
+        function hideDataView() {
+            const modal = document.getElementById('dataModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        function loadData() {
+            const dataContent = document.getElementById('dataContent');
+            
+            // إظهار شاشة التحميل
+            dataContent.innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>جاري تحميل البيانات من الشيت...</p>
+                </div>
+            `;
+
+            // تحميل البيانات من Google Sheets
+            fetchDataFromSheets();
+        }
+
+        async function fetchDataFromSheets() {
+            try {
+                // رابط Google Sheets API للحصول على البيانات بصيغة JSON
+                const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBKjdsCS_LNw-kqD-zFmsd-TuW7d-O4DOb9Cs-n1pP9U4oRz3l0mzM4VzGif1wM-S0mF7wW2bP6FxW/pub?gid=603685106&single=true&output=csv';
+                
+                const response = await fetch(sheetUrl);
+                const csvText = await response.text();
+                
+                // تحويل CSV إلى بيانات قابلة للاستخدام
+                const data = parseCSVData(csvText);
+                allStudentsData = data; // حفظ البيانات للفلترة
+                displayRealData(data);
+                
+            } catch (error) {
+                console.error('خطأ في تحميل البيانات:', error);
+                displayErrorMessage();
+            }
+        }
+
+        function parseCSVData(csvText) {
+            const lines = csvText.split('\n');
+            const headers = lines[0].split(',');
+            const students = [];
+            
+            // تخطي الصف الأول (العناوين) والصفوف الفارغة
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line) {
+                    const values = line.split(',');
+                    if (values.length >= 5) {
+                        students.push({
+                            timestamp: values[0] || '',
+                            teacherName: values[1] || '',
+                            studentName: values[2] || '',
+                            className: values[3] || '',
+                            reason: values[4] || ''
+                        });
+                    }
+                }
+            }
+            
+            return students;
+        }
+
+        function displayRealData(students, selectedDate = null) {
+            const dataContent = document.getElementById('dataContent');
+            
+            // حساب الإحصائيات
+            const totalAbsent = students.length;
+            const uniqueStudents = [...new Set(students.map(s => s.studentName))].length;
+            
+            // رسالة التاريخ المحدد
+            let dateMessage = '';
+            if (selectedDate) {
+                // إنشاء التاريخ بتوقيت عمان (UTC+4)
+                const dateObj = new Date(selectedDate + 'T12:00:00+04:00');
+                
+                // التاريخ الميلادي بالعربية
+                const gregorianDate = dateObj.toLocaleDateString('ar-OM', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'long'
+                });
+                
+                dateMessage = `<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 15px; margin-bottom: 1.5rem; text-align: center; box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);">
+                    <h4 style="margin: 0 0 0.5rem 0; font-size: 1.2rem;">📅 بيانات الغياب المفلترة</h4>
+                    <div style="font-size: 1.1rem; font-weight: 600;">
+                        📆 ${gregorianDate}
+                    </div>
+                </div>`;
+            }
+            
+            if (students.length === 0) {
+                const noDataMessage = selectedDate ? 
+                    `لا توجد حالات غياب مسجلة في التاريخ المحدد` : 
+                    `لم يتم تسجيل أي حالات غياب بعد`;
+                    
+                dataContent.innerHTML = `
+                    ${dateMessage}
+                    <div style="text-align: center; padding: 3rem; color: #64748b;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">📋</div>
+                        <h3>لا توجد بيانات غياب</h3>
+                        <p>${noDataMessage}</p>
+                        ${selectedDate ? '<button class="control-btn all-btn" onclick="showAllData()" style="margin-top: 1rem;"><span class="icon">📋</span> عرض جميع البيانات</button>' : ''}
+                    </div>
+                `;
+                return;
+            }
+
+            dataContent.innerHTML = `
+                ${dateMessage}
+                <div class="stats-container">
+                    <div class="stat-card total-students">
+                        <div class="stat-number">${totalAbsent}</div>
+                        <div class="stat-label">إجمالي حالات الغياب</div>
+                    </div>
+                    <div class="stat-card absent-students">
+                        <div class="stat-number">${uniqueStudents}</div>
+                        <div class="stat-label">عدد الطالبات الغائبات</div>
+                    </div>
+                    <div class="stat-card present-students">
+                        <div class="stat-number">${students.filter(s => s.reason.includes('مرض')).length}</div>
+                        <div class="stat-label">غياب بسبب المرض</div>
+                    </div>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>وقت التسجيل</th>
+                            <th>اسم المعلمة</th>
+                            <th>اسم الطالبة</th>
+                            <th>الفصل</th>
+                            <th>سبب الغياب</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${students.map(student => `
+                            <tr>
+                                <td style="line-height: 1.4;">${formatTimestamp(student.timestamp)}</td>
+                                <td>${student.teacherName}</td>
+                                <td><strong>${student.studentName}</strong></td>
+                                <td>${student.className}</td>
+                                <td>
+                                    <span class="absent-mark">
+                                        ${student.reason}
+                                    </span>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+
+                <div style="text-align: center; color: #64748b; font-size: 0.9rem; margin-top: 2rem;">
+                    <p>📅 آخر تحديث: ${new Date().toLocaleDateString('ar-OM')} - ${new Date().toLocaleTimeString('ar-OM')}</p>
+                    <p>🏫 مدرسة أم مالك الأنصارية للبنات</p>
+                    <p>📊 ${selectedDate ? 'السجلات المعروضة' : 'إجمالي السجلات'}: ${students.length}</p>
+                    ${selectedDate ? `<p>📋 <a href="#" onclick="showAllData()" style="color: #667eea; text-decoration: none;">عرض جميع البيانات</a></p>` : ''}
+                </div>
+            `;
+        }
+
+        function formatTimestamp(timestamp) {
+            try {
+                // إنشاء التاريخ مع تعديل المنطقة الزمنية لعمان
+                const date = new Date(timestamp);
+                
+                // تحويل إلى التوقيت العماني (UTC+4)
+                const omanTime = new Date(date.getTime() + (4 * 60 * 60 * 1000));
+                
+                // تنسيق التاريخ الميلادي بالعربية
+                const gregorianDate = omanTime.toLocaleDateString('ar-OM', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'short'
+                });
+                
+                // تنسيق الوقت بالتوقيت العماني
+                const time = omanTime.toLocaleTimeString('ar-OM', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                });
+                
+                return `<div style="text-align: center; line-height: 1.4;">
+                    <div style="color: #1e40af; font-weight: 600; font-size: 0.95rem; margin-bottom: 4px;">${gregorianDate}</div>
+                    <div style="color: #10b981; font-weight: 600; font-size: 0.9rem; background: rgba(16, 185, 129, 0.1); padding: 4px 8px; border-radius: 8px; display: inline-block;">${time}</div>
+                </div>`;
+            } catch (error) {
+                return `<div style="color: #ef4444; font-size: 0.8rem;">خطأ في التاريخ</div>`;
+            }
+        }
+
+        // متغير لحفظ جميع البيانات
+        let allStudentsData = [];
+
+        function setTodayDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateFilter').value = today;
+            filterByDate();
+        }
+
+        function showAllData() {
+            document.getElementById('dateFilter').value = '';
+            displayRealData(allStudentsData);
+        }
+
+        function filterByDate() {
+            const selectedDate = document.getElementById('dateFilter').value;
+            if (!selectedDate) {
+                displayRealData(allStudentsData);
+                return;
+            }
+
+            const filteredData = allStudentsData.filter(student => {
+                try {
+                    const studentDate = new Date(student.timestamp);
+                    // تحويل إلى التوقيت العماني (UTC+4)
+                    const omanTime = new Date(studentDate.getTime() + (4 * 60 * 60 * 1000));
+                    const studentDateString = omanTime.toISOString().split('T')[0];
+                    return studentDateString === selectedDate;
+                } catch (error) {
+                    return false;
+                }
+            });
+
+            displayRealData(filteredData, selectedDate);
+        }
+
+        function displayErrorMessage() {
+            const dataContent = document.getElementById('dataContent');
+            dataContent.innerHTML = `
+                <div style="text-align: center; padding: 3rem; color: #ef4444;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+                    <h3>خطأ في تحميل البيانات</h3>
+                    <p>لم نتمكن من تحميل البيانات من الشيت</p>
+                    <button class="control-btn refresh-btn" onclick="loadData()" style="margin-top: 1rem;">
+                        <span class="icon">🔄</span>
+                        إعادة المحاولة
+                    </button>
+                </div>
+            `;
+        }
+
+        function refreshData() {
+            loadData();
+        }
+
+        function printData() {
+            // إنشاء محتوى الطباعة
+            createPrintContent();
+            
+            // تأخير قصير للتأكد من تحميل المحتوى
+            setTimeout(() => {
+                window.print();
+            }, 500);
+        }
+
+        function createPrintContent() {
+            // إزالة المحتوى السابق إن وجد
+            const existingPrintContent = document.querySelector('.print-content');
+            if (existingPrintContent) {
+                existingPrintContent.remove();
+            }
+
+            // الحصول على البيانات المعروضة حالياً
+            const dataContent = document.getElementById('dataContent');
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            // تحديد البيانات المراد طباعتها
+            let dataToPrint = allStudentsData;
+            let dateTitle = 'جميع البيانات';
+            
+            if (dateFilter) {
+                dataToPrint = allStudentsData.filter(student => {
+                    try {
+                        const studentDate = new Date(student.timestamp);
+                        const omanTime = new Date(studentDate.getTime() + (4 * 60 * 60 * 1000));
+                        const studentDateString = omanTime.toISOString().split('T')[0];
+                        return studentDateString === dateFilter;
+                    } catch (error) {
+                        return false;
+                    }
+                });
+                
+                // تنسيق التاريخ المحدد
+                const dateObj = new Date(dateFilter + 'T12:00:00+04:00');
+                dateTitle = dateObj.toLocaleDateString('ar-OM', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'long'
+                });
+            }
+
+            // حساب الإحصائيات
+            const totalAbsent = dataToPrint.length;
+            const uniqueStudents = [...new Set(dataToPrint.map(s => s.studentName))].length;
+            const sickAbsent = dataToPrint.filter(s => s.reason.includes('مرض')).length;
+
+            // إنشاء محتوى الطباعة
+            const printContent = document.createElement('div');
+            printContent.className = 'print-content';
+            printContent.style.display = 'none'; // إخفاء في العرض العادي
+            
+            printContent.innerHTML = `
+                <div class="print-header">
+                    <div class="print-school-name">مدرسة أم مالك الأنصارية للبنات</div>
+                    <div class="print-title">📊 تقرير غياب الطلبة</div>
+                    <div class="print-date">📅 ${dateTitle}</div>
+                    <div class="print-date">تاريخ الطباعة: ${new Date().toLocaleDateString('ar-OM')} - ${new Date().toLocaleTimeString('ar-OM')}</div>
+                </div>
+
+                <div class="print-stats">
+                    <div class="print-stat">
+                        <span class="print-stat-number">${totalAbsent}</span>
+                        <div class="print-stat-label">إجمالي حالات الغياب</div>
+                    </div>
+                    <div class="print-stat">
+                        <span class="print-stat-number">${uniqueStudents}</span>
+                        <div class="print-stat-label">عدد الطالبات الغائبات</div>
+                    </div>
+                    <div class="print-stat">
+                        <span class="print-stat-number">${sickAbsent}</span>
+                        <div class="print-stat-label">غياب بسبب المرض</div>
+                    </div>
+                </div>
+
+                ${dataToPrint.length > 0 ? `
+                <table class="print-table">
+                    <thead>
+                        <tr>
+                            <th>وقت التسجيل</th>
+                            <th>اسم المعلمة</th>
+                            <th>اسم الطالبة</th>
+                            <th>الفصل</th>
+                            <th>سبب الغياب</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${dataToPrint.map((student, index) => `
+                            <tr>
+                                <td>
+                                    <div class="print-timestamp">
+                                        ${formatTimestampForPrint(student.timestamp)}
+                                    </div>
+                                </td>
+                                <td>${student.teacherName}</td>
+                                <td><strong>${student.studentName}</strong></td>
+                                <td>${student.className}</td>
+                                <td>
+                                    <span class="print-absent-mark">
+                                        ${student.reason}
+                                    </span>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                ` : `
+                <div style="text-align: center; padding: 30pt; color: #64748b; border: 1pt solid #e2e8f0; margin: 20pt 0;">
+                    <div style="font-size: 16pt; margin-bottom: 10pt;">📋</div>
+                    <div style="font-size: 14pt; font-weight: bold;">لا توجد بيانات غياب</div>
+                    <div style="font-size: 12pt; margin-top: 5pt;">لم يتم تسجيل أي حالات غياب في التاريخ المحدد</div>
+                </div>
+                `}
+
+                <div class="print-footer">
+                    <div>🏫 مدرسة أم مالك الأنصارية للبنات</div>
+                    <div>📧 إعداد مديرة المدرسة: أحلام بنت علي الحمدانية</div>
+                    <div>📊 عدد السجلات المطبوعة: ${dataToPrint.length}</div>
+                    <div style="margin-top: 10pt; font-size: 8pt;">تم إنشاء هذا التقرير بواسطة نظام رصد الغياب الإلكتروني</div>
+                </div>
+            `;
+
+            // إضافة المحتوى إلى الصفحة
+            document.body.appendChild(printContent);
+        }
+
+        function formatTimestampForPrint(timestamp) {
+            try {
+                const date = new Date(timestamp);
+                const omanTime = new Date(date.getTime() + (4 * 60 * 60 * 1000));
+                
+                const gregorianDate = omanTime.toLocaleDateString('ar-OM', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    weekday: 'short'
+                });
+                
+                const time = omanTime.toLocaleTimeString('ar-OM', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                
+                return `<div class="print-date-part">${gregorianDate}</div><div class="print-time-part">${time}</div>`;
+            } catch (error) {
+                return '<div style="color: #ef4444;">خطأ في التاريخ</div>';
+            }
+        }
+
+        // وظائف الإحصائيات المتقدمة
+        function showStatsPasswordModal() {
+            const modal = document.getElementById('statsPasswordModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+            document.getElementById('statsPasswordInput').focus();
+        }
+
+        function hideStatsPasswordModal() {
+            const modal = document.getElementById('statsPasswordModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.getElementById('statsPasswordInput').value = '';
+                document.getElementById('statsErrorMessage').style.display = 'none';
+            }, 300);
+        }
+
+        function checkStatsPassword() {
+            const password = document.getElementById('statsPasswordInput').value;
+            const errorMessage = document.getElementById('statsErrorMessage');
+            
+            if (password === 'admin123') {
+                hideStatsPasswordModal();
+                showAdvancedStats();
+            } else {
+                errorMessage.style.display = 'block';
+                document.getElementById('statsPasswordInput').value = '';
+                document.getElementById('statsPasswordInput').focus();
+            }
+        }
+
+        function handleStatsPasswordKeyPress(event) {
+            if (event.key === 'Enter') {
+                checkStatsPassword();
+            }
+        }
+
+        function showAdvancedStats() {
+            const modal = document.getElementById('advancedStatsModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+            loadAdvancedStats();
+        }
+
+        function hideAdvancedStats() {
+            const modal = document.getElementById('advancedStatsModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        function loadAdvancedStats() {
+            const statsContent = document.getElementById('advancedStatsContent');
+            
+            // إظهار شاشة التحميل
+            statsContent.innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>جاري تحليل البيانات وحساب الإحصائيات...</p>
+                </div>
+            `;
+
+            // تحميل البيانات وتحليلها
+            fetchAdvancedStatsData();
+        }
+
+        async function fetchAdvancedStatsData() {
+            try {
+                const sheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBKjdsCS_LNw-kqD-zFmsd-TuW7d-O4DOb9Cs-n1pP9U4oRz3l0mzM4VzGif1wM-S0mF7wW2bP6FxW/pub?gid=603685106&single=true&output=csv';
+                
+                const response = await fetch(sheetUrl);
+                const csvText = await response.text();
+                
+                const data = parseCSVData(csvText);
+                analyzeAdvancedStats(data);
+                
+            } catch (error) {
+                console.error('خطأ في تحميل البيانات:', error);
+                displayAdvancedStatsError();
+            }
+        }
+
+        function analyzeAdvancedStats(students) {
+            // تحليل أكثر الفصول غياباً
+            const classStats = {};
+            students.forEach(student => {
+                const className = student.className;
+                if (classStats[className]) {
+                    classStats[className]++;
+                } else {
+                    classStats[className] = 1;
+                }
+            });
+
+            // ترتيب الفصول حسب عدد حالات الغياب
+            const sortedClasses = Object.entries(classStats)
+                .sort(([,a], [,b]) => b - a)
+                .slice(0, 10); // أعلى 10 فصول
+
+            // تحليل أكثر الطالبات غياباً
+            const studentStats = {};
+            students.forEach(student => {
+                const studentName = student.studentName;
+                const className = student.className;
+                const key = `${studentName} - ${className}`;
+                
+                if (studentStats[key]) {
+                    studentStats[key].count++;
+                    studentStats[key].reasons.push(student.reason);
+                } else {
+                    studentStats[key] = {
+                        name: studentName,
+                        className: className,
+                        count: 1,
+                        reasons: [student.reason]
+                    };
+                }
+            });
+
+            // ترتيب الطالبات حسب عدد مرات الغياب
+            const sortedStudents = Object.values(studentStats)
+                .sort((a, b) => b.count - a.count)
+                .slice(0, 15); // أعلى 15 طالبة
+
+            // تحليل أسباب الغياب
+            const reasonStats = {};
+            students.forEach(student => {
+                const reason = student.reason;
+                if (reasonStats[reason]) {
+                    reasonStats[reason]++;
+                } else {
+                    reasonStats[reason] = 1;
+                }
+            });
+
+            const sortedReasons = Object.entries(reasonStats)
+                .sort(([,a], [,b]) => b - a);
+
+            // تحليل الغياب حسب الأيام
+            const dayStats = {};
+            students.forEach(student => {
+                try {
+                    const date = new Date(student.timestamp);
+                    const omanTime = new Date(date.getTime() + (4 * 60 * 60 * 1000));
+                    const dayName = omanTime.toLocaleDateString('ar-OM', { weekday: 'long' });
+                    
+                    if (dayStats[dayName]) {
+                        dayStats[dayName]++;
+                    } else {
+                        dayStats[dayName] = 1;
+                    }
+                } catch (error) {
+                    // تجاهل الأخطاء في التاريخ
+                }
+            });
+
+            const sortedDays = Object.entries(dayStats)
+                .sort(([,a], [,b]) => b - a);
+
+            displayAdvancedStats(sortedClasses, sortedStudents, sortedReasons, sortedDays, students.length);
+        }
+
+        function displayAdvancedStats(topClasses, topStudents, topReasons, topDays, totalRecords) {
+            const statsContent = document.getElementById('advancedStatsContent');
+            
+            statsContent.innerHTML = `
+                <div style="margin-bottom: 2rem;">
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 1.5rem; border-radius: 15px; text-align: center; margin-bottom: 2rem; box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);">
+                        <h3 style="margin: 0 0 0.5rem 0; font-size: 1.4rem;">📊 تحليل شامل لبيانات الغياب</h3>
+                        <p style="margin: 0; font-size: 1rem; opacity: 0.9;">إجمالي السجلات المحللة: ${totalRecords} سجل</p>
+                        <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; opacity: 0.8;">تاريخ التحليل: ${new Date().toLocaleDateString('ar-OM')} - ${new Date().toLocaleTimeString('ar-OM')}</p>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+                    <!-- أكثر الفصول غياباً -->
+                    <div style="background: white; border-radius: 15px; padding: 1.5rem; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;">
+                        <h4 style="color: #ef4444; font-size: 1.3rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                            🏫 أكثر الفصول غياباً
+                        </h4>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            ${topClasses.length > 0 ? topClasses.map((classData, index) => `
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; margin-bottom: 0.5rem; background: ${index === 0 ? 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)' : index === 1 ? 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)' : index === 2 ? 'linear-gradient(135deg, #fed7aa 0%, #fdba74 100%)' : '#f8fafc'}; border-radius: 10px; border-left: 4px solid ${index === 0 ? '#f59e0b' : index === 1 ? '#6b7280' : index === 2 ? '#ea580c' : '#3b82f6'};">
+                                    <div>
+                                        <div style="font-weight: 600; color: #2d3748; font-size: 1rem;">
+                                            ${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`} ${classData[0]}
+                                        </div>
+                                    </div>
+                                    <div style="background: ${index === 0 ? '#f59e0b' : index === 1 ? '#6b7280' : index === 2 ? '#ea580c' : '#3b82f6'}; color: white; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: 600; font-size: 0.9rem;">
+                                        ${classData[1]} حالة غياب
+                                    </div>
+                                </div>
+                            `).join('') : '<p style="text-align: center; color: #64748b; padding: 2rem;">لا توجد بيانات</p>'}
+                        </div>
+                    </div>
+
+                    <!-- أكثر الطالبات غياباً -->
+                    <div style="background: white; border-radius: 15px; padding: 1.5rem; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;">
+                        <h4 style="color: #dc2626; font-size: 1.3rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                            👩‍🎓 أكثر الطالبات غياباً
+                        </h4>
+                        <div style="max-height: 400px; overflow-y: auto;">
+                            ${topStudents.length > 0 ? topStudents.map((studentData, index) => `
+                                <div style="padding: 1rem; margin-bottom: 0.8rem; background: ${index === 0 ? 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)' : index === 1 ? 'linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%)' : index === 2 ? 'linear-gradient(135deg, #fed7aa 0%, #fdba74 100%)' : '#f8fafc'}; border-radius: 12px; border-left: 4px solid ${index === 0 ? '#f59e0b' : index === 1 ? '#6b7280' : index === 2 ? '#ea580c' : '#8b5cf6'}; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <div style="font-weight: 700; color: #2d3748; font-size: 1rem;">
+                                            ${index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`} ${studentData.name}
+                                        </div>
+                                        <div style="background: ${index === 0 ? '#f59e0b' : index === 1 ? '#6b7280' : index === 2 ? '#ea580c' : '#8b5cf6'}; color: white; padding: 0.3rem 0.7rem; border-radius: 15px; font-weight: 600; font-size: 0.85rem;">
+                                            ${studentData.count} مرة
+                                        </div>
+                                    </div>
+                                    <div style="font-size: 0.9rem; color: #4a5568; margin-bottom: 0.5rem;">
+                                        📚 الفصل: ${studentData.className}
+                                    </div>
+                                    <div style="font-size: 0.85rem; color: #64748b;">
+                                        📝 الأسباب: ${[...new Set(studentData.reasons)].join(' • ')}
+                                    </div>
+                                </div>
+                            `).join('') : '<p style="text-align: center; color: #64748b; padding: 2rem;">لا توجد بيانات</p>'}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+                    <!-- أسباب الغياب -->
+                    <div style="background: white; border-radius: 15px; padding: 1.5rem; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;">
+                        <h4 style="color: #7c3aed; font-size: 1.3rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                            📋 أسباب الغياب
+                        </h4>
+                        ${topReasons.length > 0 ? topReasons.map((reasonData, index) => `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); border-radius: 10px; border-left: 4px solid #7c3aed;">
+                                <div style="font-weight: 600; color: #2d3748;">
+                                    ${reasonData[0]}
+                                </div>
+                                <div style="background: #7c3aed; color: white; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: 600; font-size: 0.9rem;">
+                                    ${reasonData[1]} حالة
+                                </div>
+                            </div>
+                        `).join('') : '<p style="text-align: center; color: #64748b; padding: 2rem;">لا توجد بيانات</p>'}
+                    </div>
+
+                    <!-- الغياب حسب أيام الأسبوع -->
+                    <div style="background: white; border-radius: 15px; padding: 1.5rem; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;">
+                        <h4 style="color: #059669; font-size: 1.3rem; margin: 0 0 1.5rem 0; display: flex; align-items: center; gap: 0.5rem;">
+                            📅 الغياب حسب أيام الأسبوع
+                        </h4>
+                        ${topDays.length > 0 ? topDays.map((dayData, index) => `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border-radius: 10px; border-left: 4px solid #059669;">
+                                <div style="font-weight: 600; color: #2d3748;">
+                                    ${dayData[0]}
+                                </div>
+                                <div style="background: #059669; color: white; padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: 600; font-size: 0.9rem;">
+                                    ${dayData[1]} حالة
+                                </div>
+                            </div>
+                        `).join('') : '<p style="text-align: center; color: #64748b; padding: 2rem;">لا توجد بيانات</p>'}
+                    </div>
+                </div>
+
+                <div style="text-align: center; color: #64748b; font-size: 0.9rem; margin-top: 2rem; padding: 1.5rem; background: #f8fafc; border-radius: 15px; border: 1px solid #e2e8f0;">
+                    <p style="margin: 0 0 0.5rem 0;">🏫 <strong>مدرسة أم مالك الأنصارية للبنات</strong></p>
+                    <p style="margin: 0 0 0.5rem 0;">📊 تقرير الإحصائيات المتقدمة - إعداد مديرة المدرسة: أحلام بنت علي الحمدانية</p>
+                    <p style="margin: 0; font-size: 0.8rem; opacity: 0.8;">تم إنشاء هذا التقرير بواسطة نظام رصد الغياب الإلكتروني المتطور</p>
+                </div>
+            `;
+        }
+
+        function displayAdvancedStatsError() {
+            const statsContent = document.getElementById('advancedStatsContent');
+            statsContent.innerHTML = `
+                <div style="text-align: center; padding: 3rem; color: #ef4444;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+                    <h3>خطأ في تحليل البيانات</h3>
+                    <p>لم نتمكن من تحميل البيانات وتحليلها</p>
+                    <button class="control-btn refresh-btn" onclick="loadAdvancedStats()" style="margin-top: 1rem;">
+                        <span class="icon">🔄</span>
+                        إعادة المحاولة
+                    </button>
+                </div>
+            `;
+        }
+
+        function refreshAdvancedStats() {
+            loadAdvancedStats();
+        }
+
+        function printAdvancedStats() {
+            // إنشاء محتوى الطباعة للإحصائيات المتقدمة
+            createAdvancedStatsPrintContent();
+            
+            setTimeout(() => {
+                window.print();
+            }, 500);
+        }
+
+        function createAdvancedStatsPrintContent() {
+            // إزالة المحتوى السابق إن وجد
+            const existingPrintContent = document.querySelector('.print-content');
+            if (existingPrintContent) {
+                existingPrintContent.remove();
+            }
+
+            // الحصول على محتوى الإحصائيات
+            const statsContent = document.getElementById('advancedStatsContent').innerHTML;
+            
+            // إنشاء محتوى الطباعة
+            const printContent = document.createElement('div');
+            printContent.className = 'print-content';
+            printContent.style.display = 'none';
+            
+            printContent.innerHTML = `
+                <div class="print-header">
+                    <div class="print-school-name">مدرسة أم مالك الأنصارية للبنات</div>
+                    <div class="print-title">📈 تقرير الإحصائيات المتقدمة</div>
+                    <div class="print-date">تاريخ الطباعة: ${new Date().toLocaleDateString('ar-OM')} - ${new Date().toLocaleTimeString('ar-OM')}</div>
+                </div>
+
+                <div style="margin-top: 20pt;">
+                    ${statsContent}
+                </div>
+
+                <div class="print-footer">
+                    <div>🏫 مدرسة أم مالك الأنصارية للبنات</div>
+                    <div>📧 إعداد مديرة المدرسة: أحلام بنت علي الحمدانية</div>
+                    <div style="margin-top: 10pt; font-size: 8pt;">تم إنشاء هذا التقرير بواسطة نظام رصد الغياب الإلكتروني المتطور</div>
+                </div>
+            `;
+
+            document.body.appendChild(printContent);
+        }
+
+        // وظائف التوثيق اليومي
+        let allDocumentationData = [];
+
+        function showDocumentationView() {
+            const modal = document.getElementById('documentationModal');
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+            loadDocumentation();
+        }
+
+        function hideDocumentationView() {
+            const modal = document.getElementById('documentationModal');
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        function loadDocumentation() {
+            const docContent = document.getElementById('documentationContent');
+            
+            // إظهار شاشة التحميل
+            docContent.innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>جاري تحميل التوثيق اليومي من لوحة الإدارة...</p>
+                </div>
+            `;
+
+            // تحميل البيانات من Google Sheets (شيت التوثيق)
+            fetchDocumentationFromSheets();
+        }
+
+        async function fetchDocumentationFromSheets() {
+            try {
+                // رابط شيت التوثيق اليومي من لوحة الإدارة
+                const docSheetUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTBKjdsCS_LNw-kqD-zFmsd-TuW7d-O4DOb9Cs-n1pP9U4oRz3l0mzM4VzGif1wM-S0mF7wW2bP6FxW/pub?gid=1233343337&single=true&output=csv';
+                
+                const response = await fetch(docSheetUrl);
+                const csvText = await response.text();
+                
+                // تحويل CSV إلى بيانات قابلة للاستخدام
+                const data = parseDocumentationCSV(csvText);
+                allDocumentationData = data;
+                displayDocumentation(data);
+                
+            } catch (error) {
+                console.error('خطأ في تحميل التوثيق:', error);
+                displayDocumentationError();
+            }
+        }
+
+        function parseDocumentationCSV(csvText) {
+            const lines = csvText.split('\n');
+            const documentation = [];
+            
+            // تخطي الصف الأول (العناوين) والصفوف الفارغة
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line) {
+                    const values = parseCSVLine(line);
+                    if (values.length >= 8) {
+                        documentation.push({
+                            date: values[0] || '',
+                            studentName: values[1] || 'غير محدد',
+                            grade: values[2] || '',
+                            section: values[3] || '',
+                            guardianPhone: values[4] || '',
+                            method: values[5] || '',
+                            handledBy: values[6] || '',
+                            time: values[7] || '',
+                            notes: values[8] || ''
+                        });
+                    }
+                }
+            }
+            
+            return documentation.reverse(); // عرض الأحدث أولاً
+        }
+
+        // دالة لتحليل سطر CSV مع التعامل مع الفواصل داخل النصوص
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current.trim());
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current.trim());
+            return result;
+        }
+
+        function displayDocumentation(docs, selectedDate = null) {
+            const docContent = document.getElementById('documentationContent');
+            
+            // رسالة التاريخ المحدد
+            let dateMessage = '';
+            if (selectedDate) {
+                const dateObj = new Date(selectedDate + 'T12:00:00+04:00');
+                const gregorianDate = dateObj.toLocaleDateString('ar-OM', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'long'
+                });
+                
+                dateMessage = `<div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 1.5rem; border-radius: 15px; margin-bottom: 1.5rem; text-align: center; box-shadow: 0 8px 25px rgba(245, 158, 11, 0.3);">
+                    <h4 style="margin: 0 0 0.5rem 0; font-size: 1.2rem;">📝 التوثيق اليومي المفلتر</h4>
+                    <div style="font-size: 1.1rem; font-weight: 600;">
+                        📆 ${gregorianDate}
+                    </div>
+                </div>`;
+            }
+            
+            if (docs.length === 0) {
+                const noDataMessage = selectedDate ? 
+                    `لا يوجد توثيق مسجل في التاريخ المحدد` : 
+                    `لم يتم كتابة أي توثيق يومي بعد`;
+                    
+                docContent.innerHTML = `
+                    ${dateMessage}
+                    <div style="text-align: center; padding: 3rem; color: #64748b;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">📝</div>
+                        <h3>لا يوجد توثيق يومي</h3>
+                        <p>${noDataMessage}</p>
+                        ${selectedDate ? '<button class="control-btn all-btn" onclick="showAllDocumentation()" style="margin-top: 1rem;"><span class="icon">📋</span> عرض جميع التوثيقات</button>' : ''}
+                    </div>
+                `;
+                return;
+            }
+
+            // إحصائيات سريعة
+            const totalDocs = docs.length;
+            const uniqueStudents = [...new Set(docs.map(doc => doc.studentName))].length;
+            const uniqueDates = [...new Set(docs.map(doc => doc.date))].length;
+            const callCount = docs.filter(doc => doc.method === 'Call' || doc.method === 'اتصال').length;
+            const whatsappCount = docs.filter(doc => doc.method === 'WhatsApp' || doc.method === 'واتساب').length;
+
+            docContent.innerHTML = `
+                ${dateMessage}
+                
+                <!-- إحصائيات سريعة -->
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-number" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">${totalDocs}</div>
+                        <div class="stat-label">إجمالي المتابعات</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">${uniqueStudents}</div>
+                        <div class="stat-label">عدد الطالبات</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">${callCount}</div>
+                        <div class="stat-label">📞 اتصالات</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">${whatsappCount}</div>
+                        <div class="stat-label">💬 واتساب</div>
+                    </div>
+                </div>
+
+                <!-- جدول التوثيق كما هو في الشيت -->
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>التاريخ</th>
+                            <th>اسم الطالبة</th>
+                            <th>الصف</th>
+                            <th>الشعبة</th>
+                            <th>هاتف ولي الأمر</th>
+                            <th>طريقة التواصل (اتصال/واتساب)</th>
+                            <th>تم التعامل بواسطة</th>
+                            <th>الوقت</th>
+                            <th>ملاحظات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${docs.map(doc => `
+                            <tr>
+                                <td style="line-height: 1.4; min-width: 120px;">${formatDocDate(doc.date)}</td>
+                                <td style="font-weight: 600; color: #1e40af; min-width: 150px;">${doc.studentName}</td>
+                                <td style="text-align: center; font-weight: 600; color: #059669;">${doc.grade}</td>
+                                <td style="text-align: center; font-weight: 600; color: #7c3aed;">${doc.section}</td>
+                                <td style="text-align: center; font-family: monospace; color: #dc2626; font-weight: 600;">${doc.guardianPhone}</td>
+                                <td style="text-align: center;">
+                                    <span style="background: ${doc.method === 'Call' || doc.method === 'اتصال' ? 'linear-gradient(135deg, #10b981 0%, #059669 100%)' : 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)'}; color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.8rem; font-weight: 600;">
+                                        ${doc.method === 'Call' ? '📞 اتصال' : doc.method === 'WhatsApp' ? '💬 واتساب' : doc.method}
+                                    </span>
+                                </td>
+                                <td style="font-weight: 600; color: #f59e0b; min-width: 120px;">${doc.handledBy}</td>
+                                <td style="text-align: center; font-family: monospace; color: #8b5cf6; font-weight: 600;">${doc.time}</td>
+                                <td style="text-align: right; line-height: 1.6; max-width: 250px; padding: 0.8rem;">
+                                    ${doc.notes ? `
+                                        <div style="background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%); padding: 0.8rem; border-radius: 8px; border-left: 3px solid #f59e0b; font-size: 0.9rem;">
+                                            ${doc.notes.replace(/\n/g, '<br>')}
+                                        </div>
+                                    ` : `
+                                        <span style="color: #94a3b8; font-style: italic; font-size: 0.9rem;">لا توجد ملاحظات</span>
+                                    `}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+
+                <div style="text-align: center; color: #64748b; font-size: 0.9rem; margin-top: 2rem; padding: 1.5rem; background: #f8fafc; border-radius: 15px; border: 1px solid #e2e8f0;">
+                    <p style="margin: 0 0 0.5rem 0;">🏫 <strong>مدرسة أم مالك الأنصارية للبنات</strong></p>
+                    <p style="margin: 0 0 0.5rem 0;">📝 سجل التوثيق اليومي - إعداد مديرة المدرسة: أحلام بنت علي الحمدانية</p>
+                    <p style="margin: 0; font-size: 0.8rem; opacity: 0.8;">آخر تحديث: ${new Date().toLocaleDateString('ar-OM')} - ${new Date().toLocaleTimeString('ar-OM')}</p>
+                    <p style="margin: 0.5rem 0 0 0; font-size: 0.8rem;">📊 السجلات المعروضة: ${docs.length}</p>
+                    ${selectedDate ? `<p style="margin: 0.5rem 0 0 0;">📋 <a href="#" onclick="showAllDocumentation()" style="color: #f59e0b; text-decoration: none;">عرض جميع التوثيقات</a></p>` : ''}
+                </div>
+            `;
+        }
+
+        function formatDocumentationTime(timestamp) {
+            try {
+                const date = new Date(timestamp);
+                const omanTime = new Date(date.getTime() + (4 * 60 * 60 * 1000));
+                
+                return omanTime.toLocaleTimeString('ar-OM', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true
+                });
+            } catch (error) {
+                return 'وقت غير محدد';
+            }
+        }
+
+        function formatDocDate(dateString) {
+            try {
+                // إذا كان التاريخ بصيغة DD/MM/YYYY أو مشابهة
+                if (dateString.includes('/')) {
+                    const parts = dateString.split('/');
+                    if (parts.length === 3) {
+                        // تحويل إلى تاريخ صحيح
+                        const date = new Date(parts[2], parts[1] - 1, parts[0]);
+                        return date.toLocaleDateString('ar-OM', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            weekday: 'short'
+                        });
+                    }
+                }
+                
+                // إذا كان التاريخ بصيغة أخرى
+                const date = new Date(dateString);
+                if (!isNaN(date.getTime())) {
+                    return date.toLocaleDateString('ar-OM', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        weekday: 'short'
+                    });
+                }
+                
+                // إذا فشل التحويل، عرض النص كما هو
+                return dateString;
+            } catch (error) {
+                return dateString || 'تاريخ غير محدد';
+            }
+        }
+
+        function setDocTodayDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('docDateFilter').value = today;
+            filterDocumentationByDate();
+        }
+
+        function showAllDocumentation() {
+            document.getElementById('docDateFilter').value = '';
+            displayDocumentation(allDocumentationData);
+        }
+
+        function filterDocumentationByDate() {
+            const selectedDate = document.getElementById('docDateFilter').value;
+            if (!selectedDate) {
+                displayDocumentation(allDocumentationData);
+                return;
+            }
+
+            const filteredData = allDocumentationData.filter(doc => {
+                try {
+                    // تحويل التاريخ المحدد إلى صيغة DD/MM/YYYY للمقارنة
+                    const selectedDateObj = new Date(selectedDate);
+                    const selectedDateString = selectedDateObj.toLocaleDateString('en-GB'); // DD/MM/YYYY
+                    
+                    // مقارنة مع تاريخ السجل
+                    if (doc.date.includes('/')) {
+                        return doc.date === selectedDateString;
+                    } else {
+                        // إذا كان التاريخ بصيغة أخرى، حاول تحويله
+                        const docDate = new Date(doc.date);
+                        const docDateString = docDate.toLocaleDateString('en-GB');
+                        return docDateString === selectedDateString;
+                    }
+                } catch (error) {
+                    return false;
+                }
+            });
+
+            displayDocumentation(filteredData, selectedDate);
+        }
+
+        function displayDocumentationError() {
+            const docContent = document.getElementById('documentationContent');
+            docContent.innerHTML = `
+                <div style="text-align: center; padding: 3rem; color: #ef4444;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">⚠️</div>
+                    <h3>خطأ في تحميل التوثيق</h3>
+                    <p>لم نتمكن من تحميل التوثيق اليومي من لوحة الإدارة</p>
+                    <button class="control-btn refresh-btn" onclick="loadDocumentation()" style="margin-top: 1rem;">
+                        <span class="icon">🔄</span>
+                        إعادة المحاولة
+                    </button>
+                </div>
+            `;
+        }
+
+        function refreshDocumentation() {
+            loadDocumentation();
+        }
+
+        function printDocumentation() {
+            createDocumentationPrintContent();
+            
+            setTimeout(() => {
+                window.print();
+            }, 500);
+        }
+
+        function createDocumentationPrintContent() {
+            const existingPrintContent = document.querySelector('.print-content');
+            if (existingPrintContent) {
+                existingPrintContent.remove();
+            }
+
+            const dateFilter = document.getElementById('docDateFilter').value;
+            
+            let dataToPrint = allDocumentationData;
+            let dateTitle = 'جميع التوثيقات';
+            
+            if (dateFilter) {
+                dataToPrint = allDocumentationData.filter(doc => {
+                    try {
+                        const docDate = new Date(doc.timestamp);
+                        const omanTime = new Date(docDate.getTime() + (4 * 60 * 60 * 1000));
+                        const docDateString = omanTime.toISOString().split('T')[0];
+                        return docDateString === dateFilter;
+                    } catch (error) {
+                        return false;
+                    }
+                });
+                
+                const dateObj = new Date(dateFilter + 'T12:00:00+04:00');
+                dateTitle = dateObj.toLocaleDateString('ar-OM', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'long'
+                });
+            }
+
+            const printContent = document.createElement('div');
+            printContent.className = 'print-content';
+            printContent.style.display = 'none';
+            
+            printContent.innerHTML = `
+                <div class="print-header">
+                    <div class="print-school-name">مدرسة أم مالك الأنصارية للبنات</div>
+                    <div class="print-title">📝 سجل التوثيق اليومي</div>
+                    <div class="print-date">📅 ${dateTitle}</div>
+                    <div class="print-date">تاريخ الطباعة: ${new Date().toLocaleDateString('ar-OM')} - ${new Date().toLocaleTimeString('ar-OM')}</div>
+                </div>
+
+                ${dataToPrint.length > 0 ? `
+                <div style="margin-top: 20pt;">
+                    ${dataToPrint.map((doc, index) => `
+                        <div style="margin-bottom: 20pt; padding: 15pt; border: 1pt solid #e2e8f0; border-radius: 8pt; background: #fefefe;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10pt; padding-bottom: 8pt; border-bottom: 1pt solid #f1f5f9;">
+                                <div style="font-weight: bold; font-size: 12pt; color: #2d3748;">
+                                    📝 توثيق رقم ${index + 1}
+                                </div>
+                                <div style="font-size: 10pt; color: #64748b;">
+                                    ⏰ ${formatDocumentationTime(doc.timestamp)}
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 8pt; padding: 8pt; background: #f8fafc; border-radius: 5pt;">
+                                <div style="font-weight: bold; font-size: 10pt; color: #065f46; margin-bottom: 4pt;">
+                                    👤 من وثق: ${doc.whoDocumented}
+                                </div>
+                            </div>
+                            
+                            <div style="margin-bottom: 8pt;">
+                                <div style="font-weight: bold; font-size: 11pt; color: #92400e; margin-bottom: 6pt;">
+                                    📋 ماذا تم توثيقه:
+                                </div>
+                                <div style="line-height: 1.6; font-size: 11pt; color: #2d3748; padding: 8pt; background: white; border: 1pt solid #e2e8f0; border-radius: 5pt;">
+                                    ${doc.whatDocumented.replace(/\n/g, '<br>')}
+                                </div>
+                            </div>
+                            
+                            ${doc.additionalInfo ? `
+                                <div style="margin-top: 8pt; padding: 8pt; background: #eff6ff; border-left: 3pt solid #3b82f6; border-radius: 5pt;">
+                                    <div style="font-weight: bold; font-size: 10pt; color: #1e40af; margin-bottom: 4pt;">
+                                        ℹ️ معلومات إضافية:
+                                    </div>
+                                    <div style="font-size: 10pt; color: #1e3a8a; line-height: 1.5;">
+                                        ${doc.additionalInfo.replace(/\n/g, '<br>')}
+                                    </div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+                ` : `
+                <div style="text-align: center; padding: 30pt; color: #64748b; border: 1pt solid #e2e8f0; margin: 20pt 0;">
+                    <div style="font-size: 16pt; margin-bottom: 10pt;">📝</div>
+                    <div style="font-size: 14pt; font-weight: bold;">لا يوجد توثيق يومي</div>
+                    <div style="font-size: 12pt; margin-top: 5pt;">لم يتم كتابة أي توثيق في التاريخ المحدد</div>
+                </div>
+                `}
+
+                <div class="print-footer">
+                    <div>🏫 مدرسة أم مالك الأنصارية للبنات</div>
+                    <div>📧 إعداد مديرة المدرسة: أحلام بنت علي الحمدانية</div>
+                    <div>📝 عدد التوثيقات المطبوعة: ${dataToPrint.length}</div>
+                    <div style="margin-top: 10pt; font-size: 8pt;">تم إنشاء هذا التقرير بواسطة نظام التوثيق اليومي الإلكتروني</div>
+                </div>
+            `;
+
+            document.body.appendChild(printContent);
+        }
+
+        // إخفاء النوافذ عند النقر خارجها
+        document.getElementById('statsPasswordModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                hideStatsPasswordModal();
+            }
+        });
+
+        document.getElementById('advancedStatsModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                hideAdvancedStats();
+            }
+        });
+
+        document.getElementById('documentationModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                hideDocumentationView();
+            }
+        });
+
+        // إخفاء نافذة البيانات عند النقر خارجها
+        document.getElementById('dataModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                hideDataView();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'990b3726b433127c',t:'MTc2MDgyMzg1MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
