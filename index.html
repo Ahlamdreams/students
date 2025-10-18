@@ -316,22 +316,21 @@
         }
 
         .buttons-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
             margin-top: 2.5rem;
-            max-width: 100%;
         }
 
         .role-button {
             display: flex;
             align-items: center;
-            justify-content: flex-start;
-            gap: 1rem;
-            padding: 1.2rem 1.8rem;
+            justify-content: center;
+            gap: 1.2rem;
+            padding: 1.5rem 2.5rem;
             border: none;
-            border-radius: 18px;
-            font-size: 1.1rem;
+            border-radius: 20px;
+            font-size: 1.3rem;
             font-weight: 700;
             text-decoration: none;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -339,8 +338,6 @@
             position: relative;
             overflow: hidden;
             backdrop-filter: blur(10px);
-            min-height: 70px;
-            width: 100%;
         }
 
         .role-button::before {
@@ -482,86 +479,27 @@
         }
 
         .icon {
-            font-size: 2.8rem;
-            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
-            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 80px;
-            height: 80px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 25px;
-            backdrop-filter: blur(15px);
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            animation: iconFloat 4s ease-in-out infinite;
-            flex-shrink: 0;
-            position: relative;
-            overflow: hidden;
-            box-shadow: 
-                0 8px 25px rgba(0, 0, 0, 0.15),
-                inset 0 2px 0 rgba(255, 255, 255, 0.3),
-                inset 0 -2px 0 rgba(0, 0, 0, 0.1);
-        }
-
-        .icon::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            transition: left 0.6s ease;
-        }
-
-        .icon::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.4s ease, height 0.4s ease;
+            font-size: 1.8rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-block;
+            animation: iconFloat 3s ease-in-out infinite;
         }
 
         @keyframes iconFloat {
-            0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
-            25% { transform: translateY(-8px) rotate(3deg) scale(1.05); }
-            50% { transform: translateY(-4px) rotate(-2deg) scale(1.03); }
-            75% { transform: translateY(-10px) rotate(4deg) scale(1.07); }
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-3px) rotate(5deg); }
         }
 
         .role-button:hover .icon {
-            transform: scale(1.25) rotate(12deg) translateY(-8px);
-            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.35));
-            background: rgba(255, 255, 255, 0.35);
-            border-color: rgba(255, 255, 255, 0.5);
-            animation: iconBounce 1s ease-in-out;
-            box-shadow: 
-                0 15px 40px rgba(0, 0, 0, 0.25),
-                inset 0 3px 0 rgba(255, 255, 255, 0.4),
-                inset 0 -3px 0 rgba(0, 0, 0, 0.15),
-                0 0 30px rgba(255, 255, 255, 0.3);
-        }
-
-        .role-button:hover .icon::before {
-            left: 100%;
-        }
-
-        .role-button:hover .icon::after {
-            width: 50px;
-            height: 50px;
+            transform: scale(1.2) rotate(10deg);
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+            animation: iconBounce 0.6s ease-in-out;
         }
 
         @keyframes iconBounce {
-            0%, 100% { transform: scale(1.25) rotate(12deg) translateY(-8px); }
-            25% { transform: scale(1.35) rotate(-6deg) translateY(-15px); }
-            50% { transform: scale(1.3) rotate(18deg) translateY(-10px); }
-            75% { transform: scale(1.28) rotate(-3deg) translateY(-12px); }
+            0%, 100% { transform: scale(1.2) rotate(10deg); }
+            50% { transform: scale(1.3) rotate(-5deg); }
         }
 
         .teacher-button .icon {
@@ -1211,7 +1149,7 @@
             }
             
             .container {
-                padding: 2rem 1.5rem;
+                padding: 2.5rem 2rem;
                 margin: 0;
                 max-width: 100%;
             }
@@ -1223,32 +1161,17 @@
             }
             
             .title {
-                font-size: 1.8rem;
+                font-size: 2rem;
             }
             
             .subtitle {
-                font-size: 0.95rem;
-            }
-            
-            .buttons-container {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-                margin-top: 2rem;
+                font-size: 1rem;
             }
             
             .role-button {
-                padding: 1rem 1.5rem;
-                font-size: 1rem;
-                gap: 0.8rem;
-                min-height: 60px;
-                justify-content: center;
-            }
-            
-            .icon {
-                font-size: 2.2rem;
-                width: 65px;
-                height: 65px;
-                border-radius: 20px;
+                padding: 1.3rem 2rem;
+                font-size: 1.2rem;
+                gap: 1rem;
             }
 
             .modal-content {
@@ -1293,7 +1216,7 @@
             }
 
             .stats-container {
-                grid-template-columns: repeat(2, 1fr);
+                grid-template-columns: 1fr;
                 gap: 1rem;
             }
         }
@@ -1312,77 +1235,16 @@
             }
             
             .container {
-                padding: 1.5rem 1rem;
+                padding: 2rem 1.5rem;
             }
             
             .title {
-                font-size: 1.6rem;
-            }
-            
-            .subtitle {
-                font-size: 0.9rem;
-            }
-            
-            .buttons-container {
-                gap: 0.8rem;
-                margin-top: 1.5rem;
+                font-size: 1.8rem;
             }
             
             .role-button {
-                padding: 0.9rem 1.2rem;
-                font-size: 0.95rem;
-                gap: 0.7rem;
-                min-height: 55px;
-            }
-            
-            .icon {
-                font-size: 2rem;
-                width: 60px;
-                height: 60px;
-                border-radius: 18px;
-            }
-            
-            .stats-container {
-                grid-template-columns: 1fr;
-                gap: 0.8rem;
-            }
-        }
-
-        /* تحسين للشاشات الكبيرة */
-        @media (min-width: 1200px) {
-            .buttons-container {
-                grid-template-columns: repeat(2, 1fr);
-                max-width: 800px;
-                margin: 2.5rem auto 0;
-            }
-            
-            .role-button {
-                padding: 1.4rem 2rem;
-                font-size: 1.2rem;
-                gap: 1.2rem;
-                min-height: 80px;
-            }
-            
-            .icon {
-                font-size: 3rem;
-                width: 90px;
-                height: 90px;
-                border-radius: 28px;
-            }
-        }
-
-        /* تحسين للشاشات العريضة جداً */
-        @media (min-width: 1600px) {
-            .buttons-container {
-                grid-template-columns: repeat(3, 1fr);
-                max-width: 1000px;
-            }
-            
-            .icon {
-                font-size: 3.2rem;
-                width: 95px;
-                height: 95px;
-                border-radius: 30px;
+                padding: 1.2rem 1.5rem;
+                font-size: 1.1rem;
             }
         }
     </style>
@@ -2874,5 +2736,5 @@
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'990b3726b433127c',t:'MTc2MDgyMzg1MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'990b2ec540fc127c',t:'MTc2MDgyMzUwNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
