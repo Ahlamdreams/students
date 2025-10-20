@@ -1369,7 +1369,7 @@
                         <div class="school-logo">🏫</div>
                         <h1 class="school-title">مدرسة أم مالك الأنصارية للبنات</h1>
                         <p class="school-subtitle">📊 عرض بيانات الغياب</p>
-                        <button onclick="goBack()" class="back-btn">← العودة للرئيسية</button>
+                        <button onclick="goBackToAdminOptions()" class="back-btn">← العودة للأقسام المحمية</button>
                     </header>
 
                     <!-- Controls -->
@@ -3060,7 +3060,7 @@
                         <div class="school-logo">🏫</div>
                         <h1 class="school-title">مدرسة أم مالك الأنصارية للبنات</h1>
                         <p class="school-subtitle">📝 التوثيق اليومي</p>
-                        <button onclick="goBack()" class="back-btn">← العودة للرئيسية</button>
+                        <button onclick="goBackToAdminOptions()" class="back-btn">← العودة للأقسام المحمية</button>
                     </header>
 
                     <!-- Controls -->
@@ -3974,7 +3974,7 @@
                         <div class="school-logo">🏫</div>
                         <h1 class="school-title">مدرسة أم مالك الأنصارية للبنات</h1>
                         <p class="school-subtitle">📊 الإحصائيات المتقدمة</p>
-                        <button onclick="goBack()" class="back-btn">← العودة للرئيسية</button>
+                        <button onclick="goBackToAdminOptions()" class="back-btn">← العودة للأقسام المحمية</button>
                     </header>
 
                     <!-- Statistics Content -->
@@ -4922,7 +4922,7 @@
 
                     .teacher-iframe {
                         width: 100%;
-                        height: 600px;
+                        height: 800px;
                         border: 2px solid rgba(102, 126, 234, 0.2);
                         border-radius: 15px;
                         background: white;
@@ -4955,7 +4955,7 @@
                         }
                         
                         .teacher-iframe {
-                            height: 500px;
+                            height: 700px;
                         }
                         
                         .iframe-header h2 {
@@ -4969,7 +4969,7 @@
 
                     @media (max-width: 480px) {
                         .teacher-iframe {
-                            height: 450px;
+                            height: 600px;
                         }
                     }
                 </style>
@@ -5260,7 +5260,7 @@
 
                     .admin-iframe {
                         width: 100%;
-                        height: 650px;
+                        height: 850px;
                         border: 2px solid rgba(231, 76, 60, 0.2);
                         border-radius: 15px;
                         background: white;
@@ -5300,7 +5300,7 @@
 
                     @media (max-width: 768px) {
                         .admin-iframe {
-                            height: 550px;
+                            height: 750px;
                         }
                         
                         .security-badge {
@@ -5312,7 +5312,7 @@
 
                     @media (max-width: 480px) {
                         .admin-iframe {
-                            height: 500px;
+                            height: 650px;
                         }
                     }
                 </style>
@@ -5674,6 +5674,14 @@
                 document.body.innerHTML = getDataViewHTML();
                 loadAbsenceData();
             }, 1000);
+        }
+
+        // Go back to admin options
+        function goBackToAdminOptions() {
+            document.body.innerHTML = getAdminLoginHTML();
+            // Automatically unlock admin options
+            document.getElementById('passwordSection').style.display = 'none';
+            document.getElementById('adminOptions').style.display = 'block';
         }
 
         // Teacher Dashboard HTML
@@ -6061,5 +6069,5 @@
             showNotification('📞 قريباً - نموذج التواصل مع أولياء الأمور');
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'991ba36953cb127c',t:'MTc2MDk5NjA1Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'991bae41c4a0127c',t:'MTc2MDk5NjUwMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
