@@ -618,10 +618,8 @@
             <div class="kpi-card" onclick="handleDataView()">
                 <div class="kpi-icon">📊</div>
                 <h3 class="kpi-title">عرض بيانات الغياب</h3>
-                <p class="kpi-description">استعراض تقارير مفصلة عن حضور وغياب الطلبة</p>
+                <p class="kpi-description">استعراض شامل لجميع حالات الغياب والإحصائيات التفصيلية</p>
             </div>
-
-
 
             <div class="kpi-card" onclick="handleAdminLogin()">
                 <div class="kpi-icon">⚙️</div>
@@ -688,15 +686,13 @@
         }
 
         function handleDataView() {
-            showNotification('📊 سيتم توجيهك إلى صفحة عرض البيانات');
+            showNotification('📊 سيتم توجيهك إلى عرض بيانات الغياب');
             setTimeout(() => {
                 // Navigate to data view page
                 document.body.innerHTML = getDataViewHTML();
                 loadAbsenceData();
             }, 1000);
         }
-
-
 
         function handleAdminLogin() {
             showNotification('⚙️ سيتم توجيهك إلى دخول النظام');
@@ -820,8 +816,15 @@
                                 date: row[5]?.replace(/"/g, '').trim() || ''
                             };
                             
-                            // Validate essential data
-                            if (rowData.studentName && rowData.grade) {
+                            // Skip rows that indicate "no absence" - these are not actual student absences
+                            const noAbsenceIndicators = ['لايوجد غياب', 'لا يوجد غياب', 'لايوجد', 'لا يوجد', 'no absence', 'حضور كامل', 'حضور مكتمل'];
+                            const isNoAbsence = noAbsenceIndicators.some(indicator => 
+                                rowData.studentName.toLowerCase().includes(indicator.toLowerCase()) ||
+                                rowData.reason.toLowerCase().includes(indicator.toLowerCase())
+                            );
+                            
+                            // Validate essential data and exclude "no absence" entries
+                            if (rowData.studentName && rowData.grade && !isNoAbsence) {
                                 processedData.push(rowData);
                             }
                         }
@@ -1369,7 +1372,7 @@
                         <div class="school-logo">🏫</div>
                         <h1 class="school-title">مدرسة أم مالك الأنصارية للبنات</h1>
                         <p class="school-subtitle">📊 عرض بيانات الغياب</p>
-                        <button onclick="goBackToAdminOptions()" class="back-btn">← العودة للأقسام المحمية</button>
+                        <button onclick="goBack()" class="back-btn">← العودة للصفحة الرئيسية</button>
                     </header>
 
                     <!-- Controls -->
@@ -2128,14 +2131,58 @@
                             date: row[5]?.trim() || ''
                         };
                         
+                        // Include all rows including "no absence" entries
                         if (rowData.studentName) {
                             processedData.push(rowData);
                         }
                     }
                 });
 
-                // Sort by timestamp (newest first)
-                processedData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                // Sort by grade first (5th to 6th), then by timestamp (newest first)
+                const gradeOrder = {
+                    'الخامس الابتدائي': 1,
+                    'الخامس': 1,
+                    'خامس': 1,
+                    '5': 1,
+                    'الأول الابتدائي': 2,
+                    'الأول': 2,
+                    'أول': 2,
+                    '1': 2,
+                    'السادس الابتدائي': 3,
+                    'السادس': 3,
+                    'سادس': 3,
+                    '6': 3,
+                    'السابع الابتدائي': 4,
+                    'السابع': 4,
+                    'سابع': 4,
+                    '7': 4,
+                    'الثاني الابتدائي': 5,
+                    'الثاني': 5,
+                    'ثاني': 5,
+                    '2': 5,
+                    'الثالث الابتدائي': 6,
+                    'الثالث': 6,
+                    'ثالث': 6,
+                    '3': 6,
+                    'الرابع الابتدائي': 7,
+                    'الرابع': 7,
+                    'رابع': 7,
+                    '4': 7
+                };
+
+                processedData.sort((a, b) => {
+                    // Get grade order (default to 999 for unknown grades)
+                    const gradeA = gradeOrder[a.grade] || 999;
+                    const gradeB = gradeOrder[b.grade] || 999;
+                    
+                    // First sort by grade
+                    if (gradeA !== gradeB) {
+                        return gradeA - gradeB;
+                    }
+                    
+                    // Then sort by timestamp (newest first)
+                    return new Date(b.timestamp) - new Date(a.timestamp);
+                });
 
                 // Display data
                 processedData.forEach(data => {
@@ -2174,12 +2221,21 @@
 
         // Update statistics
         function updateStatistics(data) {
-            const totalAbsences = data.length;
-            const uniqueStudents = new Set(data.map(d => d.studentName)).size;
-            const sickAbsences = data.filter(d => d.reason.includes('مرض') || d.reason.includes('مريض')).length;
+            // Filter out "no absence" entries for statistics
+            const noAbsenceIndicators = ['لايوجد غياب', 'لا يوجد غياب', 'لايوجد', 'لا يوجد', 'no absence', 'حضور كامل', 'حضور مكتمل'];
+            const actualAbsences = data.filter(d => {
+                return !noAbsenceIndicators.some(indicator => 
+                    d.studentName.toLowerCase().includes(indicator.toLowerCase()) ||
+                    d.reason.toLowerCase().includes(indicator.toLowerCase())
+                );
+            });
+            
+            const totalAbsences = actualAbsences.length;
+            const uniqueStudents = new Set(actualAbsences.map(d => d.studentName)).size;
+            const sickAbsences = actualAbsences.filter(d => d.reason.includes('مرض') || d.reason.includes('مريض')).length;
             
             const today = new Date().toDateString();
-            const todayAbsences = data.filter(d => {
+            const todayAbsences = actualAbsences.filter(d => {
                 const recordDate = new Date(d.timestamp).toDateString();
                 return recordDate === today;
             }).length;
@@ -2304,7 +2360,14 @@
                                 date: row[5]?.replace(/"/g, '').trim() || ''
                             };
                             
-                            if (rowData.studentName && rowData.grade) {
+                            // Skip rows that indicate "no absence" - these are not actual student absences
+                            const noAbsenceIndicators = ['لايوجد غياب', 'لا يوجد غياب', 'لايوجد', 'لا يوجد', 'no absence', 'حضور كامل', 'حضور مكتمل'];
+                            const isNoAbsence = noAbsenceIndicators.some(indicator => 
+                                rowData.studentName.toLowerCase().includes(indicator.toLowerCase()) ||
+                                rowData.reason.toLowerCase().includes(indicator.toLowerCase())
+                            );
+                            
+                            if (rowData.studentName && rowData.grade && !isNoAbsence) {
                                 processedData.push(rowData);
                             }
                         }
@@ -3060,7 +3123,7 @@
                         <div class="school-logo">🏫</div>
                         <h1 class="school-title">مدرسة أم مالك الأنصارية للبنات</h1>
                         <p class="school-subtitle">📝 التوثيق اليومي</p>
-                        <button onclick="goBackToAdminOptions()" class="back-btn">← العودة للأقسام المحمية</button>
+                        <button onclick="goBack()" class="back-btn">← العودة للصفحة الرئيسية</button>
                     </header>
 
                     <!-- Controls -->
@@ -3717,8 +3780,51 @@
                     }
                 });
 
-                // Sort by timestamp (newest first)
-                processedData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                // Sort by grade first (5th to 6th), then by timestamp (newest first)
+                const gradeOrder = {
+                    'الخامس الابتدائي': 1,
+                    'الخامس': 1,
+                    'خامس': 1,
+                    '5': 1,
+                    'الأول الابتدائي': 2,
+                    'الأول': 2,
+                    'أول': 2,
+                    '1': 2,
+                    'السادس الابتدائي': 3,
+                    'السادس': 3,
+                    'سادس': 3,
+                    '6': 3,
+                    'السابع الابتدائي': 4,
+                    'السابع': 4,
+                    'سابع': 4,
+                    '7': 4,
+                    'الثاني الابتدائي': 5,
+                    'الثاني': 5,
+                    'ثاني': 5,
+                    '2': 5,
+                    'الثالث الابتدائي': 6,
+                    'الثالث': 6,
+                    'ثالث': 6,
+                    '3': 6,
+                    'الرابع الابتدائي': 7,
+                    'الرابع': 7,
+                    'رابع': 7,
+                    '4': 7
+                };
+
+                processedData.sort((a, b) => {
+                    // Get grade order (default to 999 for unknown grades)
+                    const gradeA = gradeOrder[a.grade] || 999;
+                    const gradeB = gradeOrder[b.grade] || 999;
+                    
+                    // First sort by grade
+                    if (gradeA !== gradeB) {
+                        return gradeA - gradeB;
+                    }
+                    
+                    // Then sort by timestamp (newest first)
+                    return new Date(b.timestamp) - new Date(a.timestamp);
+                });
 
                 // Display data
                 processedData.forEach(data => {
@@ -3974,7 +4080,7 @@
                         <div class="school-logo">🏫</div>
                         <h1 class="school-title">مدرسة أم مالك الأنصارية للبنات</h1>
                         <p class="school-subtitle">📊 الإحصائيات المتقدمة</p>
-                        <button onclick="goBackToAdminOptions()" class="back-btn">← العودة للأقسام المحمية</button>
+                        <button onclick="goBack()" class="back-btn">← العودة للصفحة الرئيسية</button>
                     </header>
 
                     <!-- Statistics Content -->
@@ -4480,7 +4586,14 @@
                             date: row[5]?.trim() || ''
                         };
                         
-                        if (rowData.studentName) {
+                        // Skip rows that indicate "no absence" - these are not actual student absences
+                        const noAbsenceIndicators = ['لايوجد غياب', 'لا يوجد غياب', 'لايوجد', 'لا يوجد', 'no absence', 'حضور كامل', 'حضور مكتمل'];
+                        const isNoAbsence = noAbsenceIndicators.some(indicator => 
+                            rowData.studentName.toLowerCase().includes(indicator.toLowerCase()) ||
+                            rowData.reason.toLowerCase().includes(indicator.toLowerCase())
+                        );
+                        
+                        if (rowData.studentName && !isNoAbsence) {
                             processedData.push(rowData);
                         }
                     }
@@ -4922,7 +5035,7 @@
 
                     .teacher-iframe {
                         width: 100%;
-                        height: 800px;
+                        height: 1000px;
                         border: 2px solid rgba(102, 126, 234, 0.2);
                         border-radius: 15px;
                         background: white;
@@ -4955,7 +5068,7 @@
                         }
                         
                         .teacher-iframe {
-                            height: 700px;
+                            height: 900px;
                         }
                         
                         .iframe-header h2 {
@@ -4969,7 +5082,7 @@
 
                     @media (max-width: 480px) {
                         .teacher-iframe {
-                            height: 600px;
+                            height: 750px;
                         }
                     }
                 </style>
@@ -5260,7 +5373,7 @@
 
                     .admin-iframe {
                         width: 100%;
-                        height: 850px;
+                        height: 1100px;
                         border: 2px solid rgba(231, 76, 60, 0.2);
                         border-radius: 15px;
                         background: white;
@@ -5300,7 +5413,7 @@
 
                     @media (max-width: 768px) {
                         .admin-iframe {
-                            height: 750px;
+                            height: 950px;
                         }
                         
                         .security-badge {
@@ -5312,7 +5425,7 @@
 
                     @media (max-width: 480px) {
                         .admin-iframe {
-                            height: 650px;
+                            height: 800px;
                         }
                     }
                 </style>
@@ -5374,13 +5487,6 @@
                                 <h3>التوثيق اليومي</h3>
                                 <p>سجل التواصل مع أولياء الأمور</p>
                                 <div class="option-badge">توثيق</div>
-                            </div>
-                            
-                            <div class="admin-option-card" onclick="openDataView()">
-                                <div class="option-icon">📊</div>
-                                <h3>عرض بيانات الغياب</h3>
-                                <p>استعراض شامل لجميع حالات الغياب</p>
-                                <div class="option-badge">بيانات</div>
                             </div>
                         </div>
                     </div>
@@ -6069,5 +6175,5 @@
             showNotification('📞 قريباً - نموذج التواصل مع أولياء الأمور');
         }
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'991bae41c4a0127c',t:'MTc2MDk5NjUwMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'991bc5d4251a127c',t:'MTc2MDk5NzQ2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
